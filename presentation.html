@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Octave × Festo — The AI Context Layer for Revenue Teams</title>
+
+    <!-- Fonts: Octave brand — Aeoniktrial (display) + Inter Variable (body) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+    <style>
+        /* Aeoniktrial font-face (Octave brand heading font) */
+        @font-face {
+            font-family: 'Aeoniktrial';
+            src: url('https://cdn.prod.website-files.com/672cd0354a3e06fa498e481a/672cd0354a3e06fa498e48c3_AeonikTrial-Regular.otf') format('opentype');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Aeoniktrial';
+            src: url('https://cdn.prod.website-files.com/672cd0354a3e06fa498e481a/672cd0354a3e06fa498e48c4_AeonikTrial-Bold.otf') format('opentype');
+            font-weight: 700;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Aeoniktrial';
+            src: url('https://cdn.prod.website-files.com/672cd0354a3e06fa498e481a/672cd0354a3e06fa498e48c5_AeonikTrial-Light.otf') format('opentype');
+            font-weight: 300;
+            font-style: normal;
+            font-display: swap;
+        }
+    </style>
+    <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=jet-brains-mono@400&display=swap">
+
+    <style>
+        /* ===========================================
+           CSS CUSTOM PROPERTIES (THEME)
+           Octave Brand × Neon Cyber
+           =========================================== */
+        :root {
+            /* Octave Brand Colors */
+            --bg-primary: #080724;
+            --bg-secondary: #0c0f2d;
+            --bg-card: rgba(27, 26, 53, 0.7);
+            --bg-card-hover: rgba(27, 26, 53, 0.9);
+            --text-primary: #e6dff9;
+            --text-secondary: #a384f6;
+            --text-muted: #6e6788;
+            --accent-neon: #9b35ff;
+            --accent-lavender: #a384f6;
+            --accent-azure: #3e42c6;
+            --accent-indigo: #3c2c98;
+            --accent-lilac: #e6dff9;
+            /* Legacy aliases for gradient-text and elements using old vars */
+            --accent-cyan: #a384f6;
+            --accent-purple: #9b35ff;
+            --accent-pink: #6756db;
+            --accent-cyan-glow: rgba(163, 132, 246, 0.15);
+            --accent-purple-glow: rgba(155, 53, 255, 0.15);
+            --border-subtle: rgba(163, 132, 246, 0.08);
+            --border-glow: rgba(155, 53, 255, 0.25);
+
+            /* Typography — Octave brand fonts */
+            --font-display: 'Aeoniktrial', 'Inter', Arial, sans-serif;
+            --font-body: 'Inter', Arial, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --title-size: clamp(2rem, 6vw, 4.5rem);
+            --h2-size: clamp(1.5rem, 4vw, 2.8rem);
+            --h3-size: clamp(1rem, 2.2vw, 1.4rem);
+            --body-size: clamp(0.75rem, 1.3vw, 1rem);
+            --small-size: clamp(0.65rem, 1vw, 0.8rem);
+            --stat-size: clamp(2rem, 5vw, 3.5rem);
+
+            /* Spacing — all clamp() */
+            --slide-padding: clamp(1.5rem, 4vw, 4rem);
+            --content-gap: clamp(0.75rem, 2vw, 2rem);
+            --element-gap: clamp(0.4rem, 1vw, 1rem);
+            --card-padding: clamp(1rem, 2vw, 1.75rem);
+
+            /* Animation */
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --duration-normal: 0.7s;
+        }
+
+        /* ===========================================
+           BASE STYLES
+           =========================================== */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            height: 100%;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===========================================
+           ANIMATED BACKGROUND ORBS
+           Floating gradient orbs that move subtly
+           =========================================== */
+        .bg-orbs {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+            animation: orbFloat 10s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 400px; height: 400px;
+            background: rgba(155, 53, 255, 0.35);
+            top: -5%; left: 5%;
+            animation-delay: 0s;
+        }
+        .orb-2 {
+            width: 350px; height: 350px;
+            background: rgba(60, 44, 152, 0.4);
+            bottom: 10%; right: 10%;
+            animation-delay: -5s;
+        }
+        .orb-3 {
+            width: 300px; height: 300px;
+            background: rgba(103, 86, 219, 0.25);
+            top: 40%; left: 55%;
+            animation-delay: -3s;
+        }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(40px, -30px) scale(1.05); }
+            66% { transform: translate(-30px, 20px) scale(0.95); }
+        }
+
+        /* Scan line overlay for depth */
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(8, 7, 36, 0.03) 2px,
+                rgba(8, 7, 36, 0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ===========================================
+           SLIDE CONTAINER
+           Each slide = exactly one viewport height.
+           overflow: hidden prevents any scrolling.
+           =========================================== */
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            padding: var(--slide-padding);
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-height: 100%;
+            overflow: hidden;
+        }
+
+        /* ===========================================
+           TYPOGRAPHY
+           =========================================== */
+        h1 {
+            font-family: var(--font-display);
+            font-size: var(--title-size);
+            font-weight: 400;
+            line-height: 1.1;
+            letter-spacing: -0.01em;
+        }
+
+        h2 {
+            font-family: var(--font-display);
+            font-size: var(--h2-size);
+            font-weight: 400;
+            line-height: 1.15;
+            letter-spacing: -0.01em;
+            margin-bottom: var(--content-gap);
+        }
+
+        h3 {
+            font-family: var(--font-display);
+            font-size: var(--h3-size);
+            font-weight: 400;
+            line-height: 1.3;
+        }
+
+        p {
+            font-size: var(--body-size);
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #a384f6, #9b35ff, #6756db, #e6dff9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 200% 200%;
+            animation: gradientShift 5s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .mono {
+            font-family: var(--font-mono);
+            font-size: var(--small-size);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--accent-lavender);
+        }
+
+        /* ===========================================
+           TAG / LABEL
+           =========================================== */
+        .tag {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: var(--small-size);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--accent-lavender);
+            padding: 0.35em 1em;
+            border: 1px solid rgba(155, 53, 255, 0.25);
+            border-radius: 8px;
+            background: rgba(155, 53, 255, 0.08);
+            box-shadow: 0 0 20px rgba(155, 53, 255, 0.08);
+            margin-bottom: var(--content-gap);
+        }
+
+        /* ===========================================
+           CARDS
+           =========================================== */
+        .card {
+            background: radial-gradient(ellipse at 30% 0%, rgba(64, 51, 112, 0.4), rgba(11, 8, 41, 0.6));
+            border: 1px solid rgba(163, 132, 246, 0.1);
+            border-radius: 16px;
+            padding: var(--card-padding);
+            transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+            backdrop-filter: blur(8px);
+        }
+
+        .card:hover {
+            background: radial-gradient(ellipse at 30% 0%, rgba(64, 51, 112, 0.55), rgba(11, 8, 41, 0.7));
+            border-color: rgba(155, 53, 255, 0.25);
+            box-shadow: 0 0 30px rgba(155, 53, 255, 0.08);
+        }
+
+        .card h3 {
+            margin-bottom: clamp(0.3rem, 0.8vw, 0.6rem);
+        }
+
+        .card p {
+            font-size: var(--small-size);
+            line-height: 1.5;
+        }
+
+        /* Card icon — small glowing dot */
+        .card-icon {
+            width: clamp(28px, 3vw, 36px);
+            height: clamp(28px, 3vw, 36px);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: clamp(0.5rem, 1vw, 0.75rem);
+            font-size: clamp(0.8rem, 1.5vw, 1.1rem);
+        }
+
+        .card-icon.cyan {
+            background: rgba(163, 132, 246, 0.15);
+            box-shadow: 0 0 15px rgba(163, 132, 246, 0.15);
+            color: var(--accent-lavender);
+        }
+        .card-icon.purple {
+            background: rgba(155, 53, 255, 0.15);
+            box-shadow: 0 0 15px rgba(155, 53, 255, 0.15);
+            color: var(--accent-neon);
+        }
+        .card-icon.pink {
+            background: rgba(103, 86, 219, 0.15);
+            box-shadow: 0 0 15px rgba(103, 86, 219, 0.15);
+            color: #6756db;
+        }
+
+        /* ===========================================
+           GRIDS
+           =========================================== */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--element-gap);
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--element-gap);
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--element-gap);
+        }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===========================================
+           STATS
+           =========================================== */
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: var(--font-display);
+            font-size: var(--stat-size);
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: clamp(0.2rem, 0.5vw, 0.4rem);
+        }
+
+        .stat-label {
+            font-size: clamp(0.7rem, 1.1vw, 0.9rem);
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: clamp(0.15rem, 0.3vw, 0.25rem);
+        }
+
+        .stat-desc {
+            font-size: var(--small-size);
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* ===========================================
+           NUMBERED ITEMS
+           =========================================== */
+        .numbered-item {
+            display: flex;
+            gap: clamp(0.75rem, 1.5vw, 1.25rem);
+            align-items: flex-start;
+        }
+
+        .number {
+            font-family: var(--font-mono);
+            font-size: var(--small-size);
+            font-weight: 700;
+            color: var(--accent-lavender);
+            min-width: clamp(28px, 2.5vw, 36px);
+            height: clamp(28px, 2.5vw, 36px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(155, 53, 255, 0.25);
+            border-radius: 8px;
+            background: rgba(155, 53, 255, 0.1);
+            flex-shrink: 0;
+        }
+
+        .numbered-item h3 {
+            margin-bottom: clamp(0.15rem, 0.4vw, 0.3rem);
+        }
+
+        /* ===========================================
+           GLOWING SEPARATOR
+           =========================================== */
+        .glow-line {
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-lavender), var(--accent-neon));
+            border-radius: 1px;
+            box-shadow: 0 0 15px rgba(155, 53, 255, 0.3);
+        }
+
+        /* ===========================================
+           FLOW / ARCHITECTURE DIAGRAM
+           =========================================== */
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(0.5rem, 1.5vw, 1.25rem);
+            margin-bottom: var(--content-gap);
+        }
+
+        .flow-node {
+            text-align: center;
+            padding: clamp(0.6rem, 1.2vw, 1rem) clamp(1rem, 2vw, 1.5rem);
+            border: 1px solid rgba(155, 53, 255, 0.2);
+            border-radius: 16px;
+            background: radial-gradient(ellipse at 50% 0%, rgba(64, 51, 112, 0.3), rgba(11, 8, 41, 0.5));
+            min-width: clamp(100px, 15vw, 160px);
+            backdrop-filter: blur(8px);
+        }
+
+        .flow-node h3 {
+            font-size: clamp(0.8rem, 1.3vw, 1rem);
+            margin-bottom: 0.15em;
+        }
+
+        .flow-node p {
+            font-size: var(--small-size);
+            color: var(--text-muted);
+        }
+
+        .flow-arrow {
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            color: var(--accent-lavender);
+            opacity: 0.5;
+        }
+
+        /* ===========================================
+           SLIDE-SPECIFIC LAYOUTS
+           =========================================== */
+
+        /* Title slide centered */
+        .title-slide .slide-content {
+            align-items: center;
+            text-align: center;
+        }
+
+        .title-slide h1 {
+            max-width: 800px;
+            margin-bottom: clamp(0.5rem, 1.5vh, 1rem);
+        }
+
+        .title-slide .subtitle {
+            max-width: 600px;
+            margin-bottom: clamp(1rem, 2vh, 1.5rem);
+        }
+
+        /* Section intro — centered with description */
+        .section-slide .slide-content {
+            align-items: center;
+            text-align: center;
+        }
+
+        .section-slide h2 {
+            max-width: 700px;
+        }
+
+        .section-slide .description {
+            max-width: 650px;
+            margin-bottom: var(--content-gap);
+        }
+
+        /* Content slides — left or centered */
+        .content-slide .slide-content {
+            gap: var(--content-gap);
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ===========================================
+           PROGRESS BAR
+           =========================================== */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-lavender), var(--accent-neon), var(--accent-azure));
+            z-index: 100;
+            transition: width 0.3s var(--ease-out-expo);
+            box-shadow: 0 0 10px rgba(155, 53, 255, 0.3);
+        }
+
+        /* ===========================================
+           NAV DOTS
+           =========================================== */
+        .nav-dots {
+            position: fixed;
+            right: clamp(0.75rem, 2vw, 1.5rem);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: 1px solid var(--text-muted);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 0;
+        }
+
+        .nav-dot.active {
+            background: var(--accent-neon);
+            border-color: var(--accent-neon);
+            box-shadow: 0 0 8px rgba(155, 53, 255, 0.4);
+        }
+
+        /* ===========================================
+           KEYBOARD HINT
+           =========================================== */
+        .keyboard-hint {
+            position: fixed;
+            bottom: clamp(0.75rem, 2vh, 1.5rem);
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            z-index: 100;
+            opacity: 0.6;
+            transition: opacity 0.5s;
+        }
+
+        /* ===========================================
+           ANIMATIONS
+           Triggered by .visible class via IntersectionObserver
+           =========================================== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(25px);
+            transition: opacity var(--duration-normal) var(--ease-out-expo),
+                        transform var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .reveal-left {
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: opacity var(--duration-normal) var(--ease-out-expo),
+                        transform var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .reveal-scale {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity var(--duration-normal) var(--ease-out-expo),
+                        transform var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .slide.visible .reveal,
+        .slide.visible .reveal-left,
+        .slide.visible .reveal-scale {
+            opacity: 1;
+            transform: translateY(0) translateX(0) scale(1);
+        }
+
+        /* Staggered children */
+        .slide.visible .stagger > :nth-child(1) { transition-delay: 0.1s; }
+        .slide.visible .stagger > :nth-child(2) { transition-delay: 0.2s; }
+        .slide.visible .stagger > :nth-child(3) { transition-delay: 0.25s; }
+        .slide.visible .stagger > :nth-child(4) { transition-delay: 0.3s; }
+        .slide.visible .stagger > :nth-child(5) { transition-delay: 0.35s; }
+        .slide.visible .stagger > :nth-child(6) { transition-delay: 0.4s; }
+
+        /* ===========================================
+           RESPONSIVE BREAKPOINTS
+           =========================================== */
+        @media (max-height: 700px) {
+            :root {
+                --slide-padding: clamp(1rem, 3vw, 2.5rem);
+                --content-gap: clamp(0.5rem, 1.5vw, 1.25rem);
+                --title-size: clamp(1.5rem, 5vw, 3rem);
+                --h2-size: clamp(1.25rem, 3.5vw, 2.2rem);
+            }
+        }
+
+        @media (max-height: 600px) {
+            :root {
+                --slide-padding: clamp(0.75rem, 2.5vw, 1.75rem);
+                --content-gap: clamp(0.4rem, 1vw, 0.75rem);
+                --title-size: clamp(1.25rem, 4.5vw, 2.2rem);
+                --body-size: clamp(0.7rem, 1.2vw, 0.9rem);
+                --card-padding: clamp(0.6rem, 1.2vw, 1rem);
+            }
+            .nav-dots, .keyboard-hint { display: none; }
+        }
+
+        @media (max-height: 500px) {
+            :root {
+                --slide-padding: clamp(0.5rem, 2vw, 1.25rem);
+                --title-size: clamp(1rem, 3.5vw, 1.75rem);
+                --h2-size: clamp(0.9rem, 2.5vw, 1.4rem);
+                --body-size: clamp(0.65rem, 1vw, 0.8rem);
+            }
+        }
+
+        @media (max-width: 600px) {
+            :root {
+                --title-size: clamp(1.5rem, 8vw, 2.5rem);
+            }
+            .flow-row { flex-direction: column; }
+            .flow-arrow { transform: rotate(90deg); }
+        }
+
+        /* ===========================================
+           LOGOS
+           =========================================== */
+        .logo-bar {
+            display: flex;
+            align-items: center;
+            gap: clamp(0.75rem, 2vw, 1.5rem);
+            margin-bottom: clamp(1rem, 2.5vh, 2rem);
+        }
+
+        .logo-bar img,
+        .logo-bar svg {
+            height: clamp(28px, 4vw, 48px);
+            width: auto;
+            opacity: 0.95;
+        }
+
+        .logo-divider {
+            width: 1px;
+            height: clamp(20px, 3vw, 36px);
+            background: rgba(163, 132, 246, 0.3);
+        }
+
+        /* Persistent bottom-left logo watermark on all slides */
+        .slide-logo {
+            position: absolute;
+            bottom: clamp(0.75rem, 2vh, 1.5rem);
+            left: var(--slide-padding);
+            display: flex;
+            align-items: center;
+            gap: clamp(0.4rem, 0.8vw, 0.6rem);
+            opacity: 0.4;
+            z-index: 5;
+        }
+
+        .slide-logo img,
+        .slide-logo svg {
+            height: clamp(16px, 2vw, 24px);
+            width: auto;
+        }
+
+        .slide-logo .logo-divider {
+            height: clamp(12px, 1.5vw, 18px);
+            background: rgba(163, 132, 246, 0.2);
+        }
+
+        /* ===========================================
+           REDUCED MOTION
+           =========================================== */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.2s !important;
+            }
+            html { scroll-behavior: auto; }
+            .orb { animation: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Animated background orbs -->
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <!-- Scan line overlay -->
+    <div class="scanlines"></div>
+
+    <!-- Progress bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Navigation dots -->
+    <nav class="nav-dots" id="navDots"></nav>
+
+    <!-- Keyboard hint -->
+    <div class="keyboard-hint" id="keyboardHint">↓ scroll · arrows · space</div>
+
+
+    <!-- =========================================
+         SLIDE 1: TITLE
+         ========================================= -->
+    <section class="slide title-slide" data-slide="0">
+        <div class="slide-content">
+            <div class="logo-bar reveal">
+                <img src="assets/octave-logo-dark.svg" alt="Octave">
+                <div class="logo-divider"></div>
+                <img src="assets/festo-logo.svg" alt="Festo">
+            </div>
+            <h1 class="reveal">The AI <span class="gradient-text">Context Layer</span> for Revenue Teams</h1>
+            <p class="subtitle reveal">Transforming static templates into intelligent, adaptive revenue engines</p>
+            <div class="glow-line reveal" style="margin-top: clamp(1rem, 2vh, 1.5rem);"></div>
+        </div>
+    </section>
+
+
+    <!-- =========================================
+         SLIDE 2: THE PROBLEM
+         ========================================= -->
+    <section class="slide content-slide" data-slide="1">
+        <div class="slide-content">
+            <div class="tag reveal">// the problem</div>
+            <h2 class="reveal">The Revenue Team Reality</h2>
+            <div class="grid-3 stagger">
+                <div class="card reveal">
+                    <div class="card-icon cyan">⚡</div>
+                    <h3>Disconnected Tool Chaos</h3>
+                    <p>Teams juggle 10+ separate platforms for competitive intel, messaging, and personalization — with no single source of truth.</p>
+                </div>
+                <div class="card reveal">
+                    <div class="card-icon purple">📉</div>
+                    <h3>Static Templates Fail Fast</h3>
+                    <p>Battle cards and messaging playbooks go stale within weeks as products evolve and markets shift.</p>
+                </div>
+                <div class="card reveal">
+                    <div class="card-icon pink">⏳</div>
+                    <h3>Personalization Doesn't Scale</h3>
+                    <p>Manual research and customization bottleneck growth — reps spend hours crafting messages that should take minutes.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- =========================================
+         SLIDE 3: WHY NOW
+         ========================================= -->
+    <section class="slide content-slide" data-slide="2">
+        <div class="slide-content">
+            <div class="tag reveal">// why now</div>
+            <h2 class="reveal">The Perfect Storm</h2>
+            <p class="reveal" style="max-width: 650px; margin-bottom: var(--content-gap);">Buyer expectations, AI maturity, and rising costs have created an inflection point for revenue operations.</p>
+            <div class="stagger" style="display: flex; flex-direction: column; gap: var(--element-gap); max-width: 700px;">
+                <div class="numbered-item reveal">
+                    <div class="number">1</div>
+                    <div>
+                        <h3>Buyer Standards Have Risen</h3>
+                        <p>Generic outreach gets ignored — prospects expect contextually relevant messaging that speaks to their specific challenges.</p>
+                    </div>
+                </div>
+                <div class="numbered-item reveal">
+                    <div class="number">2</div>
+                    <div>
+                        <h3>AI Has Matured Beyond Hype</h3>
+                        <p>Language models now deliver production-grade research, qualification, and content generation at enterprise scale.</p>
+                    </div>
+                </div>
+                <div class="numbered-item reveal">
+                    <div class="number">3</div>
+                    <div>
+                        <h3>Cost of Irrelevance Is Climbing</h3>
+                        <p>Poor targeting wastes budget, burns brand equity, and gives competitors an edge in crowded markets.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- =========================================
+         SLIDE 4: THE SOLUTION
+         ========================================= -->
+    <section class="slide section-slide" data-slide="3">
+        <div class="slide-content">
+            <div class="tag reveal">// the solution</div>
+            <h2 class="reveal">The Octave Solution</h2>
+            <p class="description reveal">Octave replaces fragmented tools and brittle templates with a living GTM context engine. AI agents actively research leads, qualify accounts, and generate messaging that evolves with your market.</p>
+            <div class="grid-3 stagger" style="max-width: 900px;">
+                <div class="card reveal" style="text-align: center;">
+                    <div class="card-icon cyan" style="margin: 0 auto clamp(0.5rem, 1vw, 0.75rem);">🧠</div>
+                    <h3>Centralized Knowledge</h3>
+                    <p>All ICPs, value props, competitive intel, and playbooks in one adaptive system</p>
+                </div>
+                <div class="card reveal" style="text-align: center;">
+                    <div class="card-icon purple" style="margin: 0 auto clamp(0.5rem, 1vw, 0.75rem);">🤖</div>
+                    <h3>AI Agent Workforce</h3>
+                    <p>Autonomous research, qualification, and content generation at scale</p>
+                </div>
+                <div class="card reveal" style="text-align: center;">
+                    <div class="card-icon pink" style="margin: 0 auto clamp(0.5rem, 1vw, 0.75rem);">🔄</div>
+                    <h3>Always Current</h3>
+                    <p>Context updates automatically as products, markets, and buyer behaviors shift</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- =========================================
+         SLIDE 5: HOW IT WORKS
+         ========================================= -->
+    <section class="slide content-slide" data-slide="4">
+        <div class="slide-content" style="align-items: center; text-align: center;">
+            <div class="tag reveal">// architecture</div>
+            <h2 class="reveal">How It Works</h2>
+
+            <!-- Architecture flow -->
+            <div class="flow-row reveal-scale">
+                <div class="flow-node">
+                    <h3 class="gradient-text">Knowledge Base</h3>
+                    <p>Centralized GTM intel</p>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">
+                    <h3 class="gradient-text">AI Agents</h3>
+                    <p>Research, score, generate</p>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">
+                    <h3 class="gradient-text">Channels</h3>
+                    <p>CRM, sequencers, enrichment</p>
+                </div>
+            </div>
+
+            <div class="grid-3 stagger" style="max-width: 900px; text-align: left;">
+                <div class="card reveal">
+                    <h3 style="color: var(--accent-lavender);">Input Layer</h3>
+                    <p>Battle cards, ICPs, positioning frameworks, competitive insights, and messaging playbooks feed the knowledge base.</p>
+                </div>
+                <div class="card reveal">
+                    <h3 style="color: var(--accent-neon);">Intelligence Layer</h3>
+                    <p>AI agents analyze prospect data, research context, qualify fit, and generate hyper-relevant messaging.</p>
+                </div>
+                <div class="card reveal">
+                    <h3 style="color: var(--accent-azure);">Distribution Layer</h3>
+                    <p>Single API pushes scores and copy into Salesloft, Outreach, Instantly, CRMs, and enrichment platforms.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- =========================================
+         SLIDE 6: KEY CAPABILITIES
+         ========================================= -->
+    <section class="slide content-slide" data-slide="5">
+        <div class="slide-content">
+            <div class="tag reveal">// capabilities</div>
+            <h2 class="reveal">Key Capabilities</h2>
+            <div class="grid-4 stagger">
+                <div class="card reveal">
+                    <div class="card-icon cyan">🔍</div>
+                    <h3>Unified Competitive Intelligence</h3>
+                    <p>Consolidates battle cards, positioning frameworks, and competitive insights into one living system.</p>
+                </div>
+                <div class="card reveal">
+                    <div class="card-icon purple">🎯</div>
+                    <h3>Adaptive Outbound Campaigns</h3>
+                    <p>Campaigns evolve with changing buyer priorities and competitive shifts — messaging stays relevant automatically.</p>
+                </div>
+                <div class="card reveal">
+                    <div class="card-icon pink">✉️</div>
+                    <h3>Personalized Messaging at Scale</h3>
+                    <p>AI agents research prospect context — actual product usage, workflows, pain points — and craft messaging that resonates.</p>
+                </div>
+                <div class="card reveal">
+                    <div class="card-icon cyan">🔗</div>
+                    <h3>Seamless Tool Integration</h3>
+                    <p>Single API integration pushes copy and scores into existing sequencers, CRMs, and enrichment tools.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- =========================================
+         SLIDE 7: RESULTS
+         ========================================= -->
+    <section class="slide content-slide" data-slide="6">
+        <div class="slide-content" style="align-items: center; text-align: center;">
+            <div class="tag reveal">// results</div>
+            <h2 class="reveal">Results That Matter</h2>
+            <div class="grid-3 stagger" style="max-width: 800px; margin-bottom: var(--content-gap);">
+                <div class="stat reveal">
+                    <div class="stat-value gradient-text">75%</div>
+                    <div class="stat-label">Faster Deployment</div>
+                    <div class="stat-desc">Campaign launch time reduced from weeks to days</div>
+                </div>
+                <div class="stat reveal">
+                    <div class="stat-value gradient-text">3.2x</div>
+                    <div class="stat-label">Response Rate Lift</div>
+                    <div class="stat-desc">Contextual messaging drives higher engagement</div>
+                </div>
+                <div class="stat reveal">
+                    <div class="stat-value gradient-text">90%</div>
+                    <div class="stat-label">Time Savings</div>
+                    <div class="stat-desc">Reps spend less time on research, more time selling</div>
+                </div>
+            </div>
+            <div class="grid-2 stagger" style="max-width: 800px; text-align: left;">
+                <div class="card reveal">
+                    <h3>Unified Messaging Across Teams</h3>
+                    <p>Global teams speak with one voice — consistent positioning, updated competitive intelligence, coordinated campaigns.</p>
+                </div>
+                <div class="card reveal">
+                    <h3>Measurable Pipeline Impact</h3>
+                    <p>Better qualification and targeting translates to higher conversion rates, shorter sales cycles, and improved win rates.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- =========================================
+         SLIDE 8: WHY FESTO
+         ========================================= -->
+    <section class="slide content-slide" data-slide="7">
+        <div class="slide-content">
+            <div class="tag reveal">// why festo</div>
+            <h2 class="reveal">Why Octave for Festo</h2>
+            <p class="reveal" style="max-width: 700px; margin-bottom: var(--content-gap);">Industrial automation companies face unique GTM complexity: diverse product portfolios, technical sales cycles, global teams, and constantly evolving competitive landscapes.</p>
+            <div class="grid-4 stagger">
+                <div class="card reveal">
+                    <div class="number" style="margin-bottom: clamp(0.4rem, 0.8vw, 0.6rem);">1</div>
+                    <h3>Multi-Product Intelligence</h3>
+                    <p>Manage messaging and positioning across dozens of product lines without separate systems.</p>
+                </div>
+                <div class="card reveal">
+                    <div class="number" style="margin-bottom: clamp(0.4rem, 0.8vw, 0.6rem);">2</div>
+                    <h3>Technical Buyer Context</h3>
+                    <p>AI agents understand engineering workflows, automation requirements, and integration challenges.</p>
+                </div>
+                <div class="card reveal">
+                    <div class="number" style="margin-bottom: clamp(0.4rem, 0.8vw, 0.6rem);">3</div>
+                    <h3>Global Team Alignment</h3>
+                    <p>EU, Americas, and APAC teams access the same current intelligence — localized without sacrificing consistency.</p>
+                </div>
+                <div class="card reveal">
+                    <div class="number" style="margin-bottom: clamp(0.4rem, 0.8vw, 0.6rem);">4</div>
+                    <h3>Long Sales Cycle Optimization</h3>
+                    <p>Context-aware nurture sequences adapt as prospects' needs evolve over 6–18 month buying journeys.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- =========================================
+         SLIDE 9: DEMO / CTA
+         ========================================= -->
+    <section class="slide content-slide" data-slide="8">
+        <div class="slide-content" style="align-items: center; text-align: center;">
+            <div class="tag reveal">// next steps</div>
+            <h2 class="reveal">What We'll Demonstrate</h2>
+            <div class="grid-4 stagger" style="max-width: 900px; text-align: left;">
+                <div class="card reveal">
+                    <div class="mono" style="margin-bottom: clamp(0.3rem, 0.6vw, 0.5rem);">01</div>
+                    <h3>Knowledge Base Setup</h3>
+                    <p>How we ingest your competitive intel, ICPs, and messaging playbooks into the unified system.</p>
+                </div>
+                <div class="card reveal">
+                    <div class="mono" style="margin-bottom: clamp(0.3rem, 0.6vw, 0.5rem);">02</div>
+                    <h3>AI Agent Research</h3>
+                    <p>Watch agents analyze a prospect account, research context, and identify key talking points.</p>
+                </div>
+                <div class="card reveal">
+                    <div class="mono" style="margin-bottom: clamp(0.3rem, 0.6vw, 0.5rem);">03</div>
+                    <h3>Message Generation</h3>
+                    <p>See personalized, contextually relevant outreach created in real-time for specific prospects.</p>
+                </div>
+                <div class="card reveal">
+                    <div class="mono" style="margin-bottom: clamp(0.3rem, 0.6vw, 0.5rem);">04</div>
+                    <h3>Tool Integration</h3>
+                    <p>How generated content and scores flow into your existing CRM and sequencing platforms.</p>
+                </div>
+            </div>
+            <div class="glow-line reveal" style="margin-top: var(--content-gap);"></div>
+        </div>
+    </section>
+
+
+    <!-- ===========================================
+         JAVASCRIPT: Slide Controller
+         Handles navigation, animations, progress
+         =========================================== -->
+    <script>
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.totalSlides = this.slides.length;
+                this.currentSlide = 0;
+                this.isAnimating = false;
+                this.touchStartY = 0;
+
+                this.initObserver();
+                this.initNavDots();
+                this.initKeyboard();
+                this.initTouch();
+                this.initWheel();
+                this.updateProgress();
+
+                // Hide keyboard hint after first interaction
+                this.hintVisible = true;
+            }
+
+            /* -----------------------------------------------
+               Intersection Observer: triggers .visible class
+               when a slide enters the viewport
+               ----------------------------------------------- */
+            initObserver() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            const index = parseInt(entry.target.dataset.slide);
+                            this.currentSlide = index;
+                            this.updateNavDots();
+                            this.updateProgress();
+                        }
+                    });
+                }, {
+                    threshold: 0.5
+                });
+
+                this.slides.forEach(slide => observer.observe(slide));
+            }
+
+            /* -----------------------------------------------
+               Navigation dots on the right side
+               ----------------------------------------------- */
+            initNavDots() {
+                const nav = document.getElementById('navDots');
+                this.slides.forEach((_, i) => {
+                    const dot = document.createElement('button');
+                    dot.classList.add('nav-dot');
+                    if (i === 0) dot.classList.add('active');
+                    dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+                    dot.addEventListener('click', () => this.goToSlide(i));
+                    nav.appendChild(dot);
+                });
+            }
+
+            updateNavDots() {
+                document.querySelectorAll('.nav-dot').forEach((dot, i) => {
+                    dot.classList.toggle('active', i === this.currentSlide);
+                });
+            }
+
+            /* -----------------------------------------------
+               Progress bar at the top
+               ----------------------------------------------- */
+            updateProgress() {
+                const progress = ((this.currentSlide + 1) / this.totalSlides) * 100;
+                document.getElementById('progressBar').style.width = progress + '%';
+            }
+
+            /* -----------------------------------------------
+               Navigate to a specific slide
+               ----------------------------------------------- */
+            goToSlide(index) {
+                if (index < 0 || index >= this.totalSlides || this.isAnimating) return;
+                this.isAnimating = true;
+                this.hideHint();
+
+                this.slides[index].scrollIntoView({ behavior: 'smooth' });
+
+                setTimeout(() => {
+                    this.isAnimating = false;
+                }, 800);
+            }
+
+            next() { this.goToSlide(this.currentSlide + 1); }
+            prev() { this.goToSlide(this.currentSlide - 1); }
+
+            /* -----------------------------------------------
+               Keyboard navigation: arrows, space, page up/down
+               ----------------------------------------------- */
+            initKeyboard() {
+                document.addEventListener('keydown', (e) => {
+                    switch (e.key) {
+                        case 'ArrowDown':
+                        case 'ArrowRight':
+                        case ' ':
+                        case 'PageDown':
+                            e.preventDefault();
+                            this.next();
+                            break;
+                        case 'ArrowUp':
+                        case 'ArrowLeft':
+                        case 'PageUp':
+                            e.preventDefault();
+                            this.prev();
+                            break;
+                        case 'Home':
+                            e.preventDefault();
+                            this.goToSlide(0);
+                            break;
+                        case 'End':
+                            e.preventDefault();
+                            this.goToSlide(this.totalSlides - 1);
+                            break;
+                    }
+                });
+            }
+
+            /* -----------------------------------------------
+               Touch / swipe support for mobile
+               ----------------------------------------------- */
+            initTouch() {
+                document.addEventListener('touchstart', (e) => {
+                    this.touchStartY = e.touches[0].clientY;
+                }, { passive: true });
+
+                document.addEventListener('touchend', (e) => {
+                    const deltaY = this.touchStartY - e.changedTouches[0].clientY;
+                    if (Math.abs(deltaY) > 50) {
+                        deltaY > 0 ? this.next() : this.prev();
+                    }
+                }, { passive: true });
+            }
+
+            /* -----------------------------------------------
+               Mouse wheel navigation (debounced)
+               ----------------------------------------------- */
+            initWheel() {
+                let wheelTimeout;
+                document.addEventListener('wheel', (e) => {
+                    clearTimeout(wheelTimeout);
+                    wheelTimeout = setTimeout(() => {
+                        if (e.deltaY > 30) this.next();
+                        else if (e.deltaY < -30) this.prev();
+                    }, 80);
+                }, { passive: true });
+            }
+
+            /* -----------------------------------------------
+               Hide keyboard hint after first interaction
+               ----------------------------------------------- */
+            hideHint() {
+                if (this.hintVisible) {
+                    const hint = document.getElementById('keyboardHint');
+                    if (hint) hint.style.opacity = '0';
+                    this.hintVisible = false;
+                }
+            }
+        }
+
+        // Inject subtle logo watermark into slides 2-9
+        function injectSlideLogos() {
+            document.querySelectorAll('.slide:not(.title-slide)').forEach(slide => {
+                const logo = document.createElement('div');
+                logo.className = 'slide-logo';
+                logo.innerHTML = `
+                    <img src="assets/octave-logo-dark.svg" alt="Octave">
+                    <div class="logo-divider"></div>
+                    <img src="assets/festo-logo.svg" alt="Festo">
+                `;
+                slide.appendChild(logo);
+            });
+        }
+
+        // Initialize presentation
+        document.addEventListener('DOMContentLoaded', () => {
+            injectSlideLogos();
+            new SlidePresentation();
+        });
+    </script>
+</body>
+</html>
