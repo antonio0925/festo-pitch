@@ -35,6 +35,84 @@
 
     <style>
         /* ===========================================
+           PASSWORD GATE
+           =========================================== */
+        #password-gate {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: #080724;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            font-family: 'Inter', Arial, sans-serif;
+        }
+        #password-gate.unlocked {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        #password-gate .gate-logo {
+            width: 160px;
+            margin-bottom: 32px;
+            opacity: 0.85;
+        }
+        #password-gate h2 {
+            color: #e6dff9;
+            font-family: 'Aeoniktrial', 'Inter', sans-serif;
+            font-weight: 400;
+            font-size: 1.4rem;
+            margin: 0 0 24px;
+            letter-spacing: 0.02em;
+        }
+        #password-gate .gate-form {
+            display: flex;
+            gap: 10px;
+        }
+        #password-gate input {
+            background: rgba(27, 26, 53, 0.8);
+            border: 1px solid rgba(155, 53, 255, 0.3);
+            border-radius: 10px;
+            color: #e6dff9;
+            padding: 12px 18px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            width: 220px;
+            transition: border-color 0.2s;
+        }
+        #password-gate input:focus {
+            border-color: rgba(155, 53, 255, 0.7);
+        }
+        #password-gate input::placeholder {
+            color: #6e6788;
+        }
+        #password-gate button {
+            background: linear-gradient(135deg, #9b35ff, #6756db);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        #password-gate button:hover {
+            opacity: 0.85;
+        }
+        #password-gate .gate-error {
+            color: #ff5c8a;
+            font-size: 0.85rem;
+            margin-top: 12px;
+            height: 20px;
+        }
+        body.locked {
+            overflow: hidden;
+        }
+
+        /* ===========================================
            CSS CUSTOM PROPERTIES (THEME)
            Octave Brand × Neon Cyber
            =========================================== */
@@ -700,7 +778,18 @@
         }
     </style>
 </head>
-<body>
+<body class="locked">
+
+    <!-- Password gate -->
+    <div id="password-gate">
+        <img src="assets/octave-logo-dark.svg" alt="Octave" class="gate-logo">
+        <h2>Enter passcode to view this deck</h2>
+        <div class="gate-form">
+            <input type="password" id="gate-input" placeholder="Passcode" autocomplete="off" autofocus>
+            <button onclick="tryUnlock()">Enter</button>
+        </div>
+        <div class="gate-error" id="gate-error"></div>
+    </div>
 
     <!-- Animated background orbs -->
     <div class="bg-orbs">
@@ -1199,6 +1288,47 @@
             injectSlideLogos();
             new SlidePresentation();
         });
+    </script>
+
+    <!-- Password gate logic -->
+    <script>
+        // Simple hash so the password isn't in plain text in source
+        const HASH = 'c31339';
+        function simpleHash(str) {
+            let h = 0;
+            for (let i = 0; i < str.length; i++) {
+                h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+            }
+            return (h >>> 0).toString(16).slice(0, 6);
+        }
+
+        function tryUnlock() {
+            const input = document.getElementById('gate-input');
+            const val = input.value.trim();
+            if (simpleHash(val) === HASH) {
+                document.getElementById('password-gate').classList.add('unlocked');
+                document.body.classList.remove('locked');
+                sessionStorage.setItem('deck_unlocked', '1');
+                setTimeout(() => {
+                    document.getElementById('password-gate').remove();
+                }, 600);
+            } else {
+                document.getElementById('gate-error').textContent = 'Incorrect passcode';
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        // Allow Enter key
+        document.getElementById('gate-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') tryUnlock();
+        });
+
+        // Skip gate if already unlocked this session
+        if (sessionStorage.getItem('deck_unlocked') === '1') {
+            document.getElementById('password-gate').remove();
+            document.body.classList.remove('locked');
+        }
     </script>
 </body>
 </html>
